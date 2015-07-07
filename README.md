@@ -19,16 +19,17 @@ npm install purescript
 ## Usage
 
 ```javascript
-var execFile = require('child_process').execFile;
-var paths = require('purescript');
+const {execFile} = require('child_process');
+const paths = require('purescript');
 
 // On POSIX
 paths.psc; //=> '/path/to/proj/node_modules/purescript/vendor/psc'
+paths['psc-bundle']; //=> '/path/to/proj/node_modules/purescript/vendor/psc-bundle'
 paths['psc-docs']; //=> '/path/to/proj/node_modules/purescript/vendor/psc-docs'
-paths['psc-make']; //=> '/path/to/proj/node_modules/purescript/vendor/psc-make'
+paths['psc-publish']; //=> '/path/to/proj/node_modules/purescript/vendor/psc-publish'
 paths.psci; //=> '/path/to/proj/node_modules/purescript/vendor/psci'
 
-execFile(psc, ['input.purs', '--output', 'output.purs'], function(err) {
+execFile(psc, ['input.purs', '--output', 'output.purs'], err => {
   if (err) {
     throw err;
   }
@@ -45,23 +46,29 @@ Type: `String`
 
 The path to [`psc`](https://github.com/purescript/purescript/wiki/Language-Guide:-Getting-Started#compiler-usage) binary
 
+### require('purescript')['psc-bundle']
+
+Type: `String`
+
+The path to `psc-bundle` binary
+
 ### require('purescript')['psc-docs']
 
 Type: `String`
 
 The path to `psc-docs` binary
 
-### require('purescript')['psc-make']
+### require('purescript')['psc-publish']
 
 Type: `String`
 
-The path to [`psc-make`](https://github.com/purescript/purescript/wiki/Language-Guide:-Getting-Started#psc-make) binary
+The path to `psc-publish` binary
 
 ### require('purescript').psci
 
 Type: `String`
 
-The path to `psci` binary
+The path to [`psci`](https://github.com/purescript/purescript/wiki/PSCi) binary
 
 ## CLI
 
@@ -71,9 +78,10 @@ You can use it via CLI by installing it [globally](https://docs.npmjs.com/files/
 npm install -g purescript
 
 psc --help
+psc-bundle --help
 psc-docs --help
-psc-make --help
 psci --help
+psc-publish
 ```
 
 ## License

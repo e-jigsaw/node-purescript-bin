@@ -1,26 +1,23 @@
 {
   "name": "purescript",
   "version": "0.6.10",
-  "purescript-version": "0.6.9.5",
   "description": "PureScript wrapper that makes it seamlessly available as a local dependency",
   "license": "MIT",
   "repository": "purescript-contrib/node-purescript-bin",
-  "author": {
-    "name": "Shinnosuke Watanabe",
-    "email": "snnskwtnb@gmail.com",
-    "url": "http://github.com/shinnn"
-  },
+  "author": "Shinnosuke Watanabe <snnskwtnb@gmail.com> (http://github.com/shinnn)",
   "bin": {
     "psc": "bin/psc.js",
+    "psc-bundle": "bin/psc-bundle.js",
     "psc-docs": "bin/psc-docs.js",
-    "psc-make": "bin/psc-make.js",
+    "psc-publish": "bin/psc-publish.js",
     "psci": "bin/psci.js"
   },
   "scripts": {
     "postinstall": "node lib/install.js",
-    "lint": "eslint --config node_modules/@shinnn/eslintrc-node/rc.json index.js test.js bin lib",
-    "pretest": "npm run-script lint",
-    "test": "node test.js | tap-spec",
+    "build": "node build.js",
+    "lint": "eslint --config node_modules/@shinnn/eslintrc-node/rc.json --ignore-path .gitignore .",
+    "pretest": "npm run-script lint && npm run-script build",
+    "test": "node test.js",
     "coverage": "istanbul cover test.js"
   },
   "files": [
@@ -48,18 +45,21 @@
     "psci"
   ],
   "dependencies": {
-    "async-each-series": "^0.1.1",
-    "bin-build": "^2.0.0",
-    "bin-wrapper": "^3.0.1",
+    "async-each-series": "^1.0.0",
+    "bin-build": "^2.1.2",
+    "bin-wrapper": "^3.0.2",
     "logalot": "^2.1.0",
     "to-executable-name": "^1.0.0"
   },
   "devDependencies": {
     "@shinnn/eslintrc-node": "^1.0.2",
-    "eslint": "^0.20.0",
-    "istanbul": "^0.3.13",
-    "rimraf": "^2.3.3",
-    "tap-spec": "^3.0.0",
+    "concat-stream": "^1.5.0",
+    "each-async": "^1.1.1",
+    "eslint": "^0.24.0",
+    "istanbul": "^0.3.17",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.4.1",
+    "tap-spec": "^4.0.2",
     "tape": "^4.0.0"
   }
 }

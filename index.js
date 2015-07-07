@@ -6,8 +6,9 @@ var toExecutableName = require('to-executable-name');
 
 [
   'psc',
+  'psc-bundle',
   'psc-docs',
-  'psc-make',
+  'psc-publish',
   'psci'
 ].forEach(function(binName) {
   exports[binName] = path.join(__dirname, 'vendor', toExecutableName(binName));

@@ -5,71 +5,46 @@ var path = require('path');
 
 var binBuild = require('bin-build');
 var EOL = require('os').EOL;
+var concatStream = require('concat-stream');
 var rimraf = require('rimraf');
 var spawn = require('child_process').spawn;
 var test = require('tape');
 
 var pkg = require('./package.json');
+var binaries = pkg.bin;
 
 var SOURCE_URL = require('./lib').SOURCE_URL;
-var VERSION = require('./lib').VERSION;
+var VERSION = '0.7.0.0';
 
 test('The package entry point', function(t) {
-  t.plan(4);
+  t.plan(5);
 
-  var pscStdout = '';
+  Object.keys(binaries).forEach(function(binName) {
+    var cp = spawn(require('./')[binName], ['--help']);
+    if (binName === 'psc-publish') {
+      cp.stderr.setEncoding('utf8').pipe(concatStream({encoding: 'string'}, function(msg) {
+        t.ok(
+          /There is a problem with your package/.test(msg),
+          'should expose a path to ' + binName + ' binary.'
+        );
+      }));
 
-  spawn(require('./').psc)
-    .on('close', function() {
-      t.ok(/__superclass_Prelude/.test(pscStdout), 'should expose a path to psc binary.');
-    })
-    .stdout
-      .on('data', function(data) {
-        pscStdout += data;
-      })
-      .setEncoding('utf8');
+      return;
+    }
 
-  var pscDocsStdout = '';
-
-  spawn(require('./')['psc-docs'], ['--help'])
-    .on('close', function() {
-      t.ok(/Usage: psc-docs/.test(pscDocsStdout), 'should expose a path to psc-docs binary.');
-    })
-    .stdout
-      .on('data', function(data) {
-        pscDocsStdout += data;
-      })
-      .setEncoding('utf8');
-
-  var pscMakeStdout = '';
-
-  spawn(require('./')['psc-make'], ['--help'])
-    .on('close', function() {
-      t.ok(/Usage: psc-make/.test(pscMakeStdout), 'should expose a path to psc-make binary.');
-    })
-    .stdout
-      .on('data', function(data) {
-        pscMakeStdout += data;
-      })
-      .setEncoding('utf8');
-
-  var psciStdout = '';
-
-  spawn(require('./').psci, ['--help'])
-    .on('close', function() {
-      t.ok(/Usage: psci/.test(psciStdout), 'should expose a path to psci binary.');
-    })
-    .stdout
-      .on('data', function(data) {
-        psciStdout += data;
-      })
-      .setEncoding('utf8');
+    cp.stdout.setEncoding('utf8').pipe(concatStream({encoding: 'string'}, function(msg) {
+      t.ok(
+        new RegExp('Usage: ' + binName).test(msg),
+        'should expose a path to ' + binName + ' binary.'
+      );
+    }));
+  });
 });
 
 [
   'psc',
+  'psc-bundle',
   'psc-docs',
-  'psc-make',
   'psci'
 ].forEach(function(binName) {
   test('"' + binName + '" command', function(t) {
@@ -77,15 +52,26 @@ test('The package entry point', function(t) {
 
     spawn('node', [path.resolve(pkg.bin[binName]), '--version'])
       .stdout
-        .on('data', function(version) {
+        .setEncoding('utf8')
+        .pipe(concatStream({encoding: 'string'}, function(version) {
           t.equal(version, VERSION + EOL, 'should run ' + binName + ' binary.');
-        })
-        .setEncoding('utf8');
+        }));
   });
 });
 
+test('"psc-publish" command', function(t) {
+  t.plan(1);
+
+  spawn('node', [path.resolve(pkg.bin['psc-publish'])])
+    .stderr
+      .setEncoding('utf8')
+      .pipe(concatStream({encoding: 'string'}, function(msg) {
+        t.ok(/file was not found/.test(msg), 'should run psc-publish binary.');
+      }));
+});
+
 test('Build script', function(t) {
-  t.plan(5);
+  t.plan(6);
 
   var tmpDir = path.join(__dirname, 'tmp');
 
@@ -93,6 +79,7 @@ test('Build script', function(t) {
 
   binBuild()
     .src(SOURCE_URL)
+    .cmd('cabal sandbox init --sandbox="' + path.join(tmpDir, '.cabal-sandbox') + '"')
     .cmd('cabal update')
     .cmd('cabal install --bindir ' + tmpDir)
     .run(function(runErr) {
@@ -105,10 +92,9 @@ test('Build script', function(t) {
 
       fs.readdir(tmpDir, function(readErr, filePaths) {
         t.strictEqual(readErr, null, 'should create a directory.');
-        t.notEqual(filePaths.indexOf('psc'), -1, 'should compile psc binary.');
-        t.notEqual(filePaths.indexOf('psc-docs'), -1, 'should compile psc-docs binary.');
-        t.notEqual(filePaths.indexOf('psc-make'), -1, 'should compile psc-make binary.');
-        t.notEqual(filePaths.indexOf('psci'), -1, 'should compile psci binary.');
+        Object.keys(binaries).forEach(function(binName) {
+          t.notEqual(filePaths.indexOf(binName), -1, 'should compile ' + binName + ' binary.');
+        });
       });
     });
 });
