@@ -15,19 +15,19 @@ var SOURCE_URL = require('./lib').SOURCE_URL;
 var VERSION = require('./lib').VERSION;
 
 test('The package entry point', function(t) {
-  t.plan(4);
+  t.plan(3);
 
-  var pscStdout = '';
-
-  spawn(require('./').psc)
-    .on('close', function() {
-      t.ok(/__superclass_Prelude/.test(pscStdout), 'should expose a path to psc binary.');
-    })
-    .stdout
-      .on('data', function(data) {
-        pscStdout += data;
-      })
-      .setEncoding('utf8');
+  // var pscStdout = '';
+  //
+  // spawn(require('./').psc)
+  //   .on('close', function() {
+  //     t.ok(/__superclass_Prelude/.test(pscStdout), 'should expose a path to psc binary.');
+  //   })
+  //   .stdout
+  //     .on('data', function(data) {
+  //       pscStdout += data;
+  //     })
+  //     .setEncoding('utf8');
 
   var pscDocsStdout = '';
 
@@ -38,18 +38,6 @@ test('The package entry point', function(t) {
     .stdout
       .on('data', function(data) {
         pscDocsStdout += data;
-      })
-      .setEncoding('utf8');
-
-  var pscMakeStdout = '';
-
-  spawn(require('./')['psc-make'], ['--help'])
-    .on('close', function() {
-      t.ok(/Usage: psc-make/.test(pscMakeStdout), 'should expose a path to psc-make binary.');
-    })
-    .stdout
-      .on('data', function(data) {
-        pscMakeStdout += data;
       })
       .setEncoding('utf8');
 
@@ -64,13 +52,44 @@ test('The package entry point', function(t) {
         psciStdout += data;
       })
       .setEncoding('utf8');
+
+  var pscBundleStdout = '';
+
+  spawn(require('./')['psc-bundle'], ['--help'])
+    .on('close', function() {
+      t.ok(
+        /Usage: psc-bundle/.test(pscBundleStdout),
+        'should expose a path to psc-bundle binary.'
+      );
+    })
+    .stdout
+      .on('data', function(data) {
+        pscBundleStdout += data;
+      })
+      .setEncoding('utf8');
+
+  // var pscPublishStdout = '';
+  //
+  // spawn(require('./')['psc-publish'], ['--help'])
+  //   .on('close', function() {
+  //     t.ok(
+  //       /Usage: psc-publish/.test(pscPublishStdout),
+  //       'should expose a path to psc-publish binary.'
+  //     );
+  //   })
+  //   .stdout
+  //     .on('data', function(data) {
+  //       pscPublishStdout += data;
+  //     })
+  //     .setEncoding('utf8');
 });
 
 [
   'psc',
   'psc-docs',
-  'psc-make',
-  'psci'
+  'psci',
+  'psc-bundle'
+  // 'psc-publish'
 ].forEach(function(binName) {
   test('"' + binName + '" command', function(t) {
     t.plan(1);
@@ -78,14 +97,14 @@ test('The package entry point', function(t) {
     spawn('node', [path.resolve(pkg.bin[binName]), '--version'])
       .stdout
         .on('data', function(version) {
-          t.equal(version, VERSION + EOL, 'should run ' + binName + ' binary.');
+          t.equal(version, VERSION + '.0' + EOL, 'should run ' + binName + ' binary.');
         })
         .setEncoding('utf8');
   });
 });
 
 test('Build script', function(t) {
-  t.plan(5);
+  t.plan(6);
 
   var tmpDir = path.join(__dirname, 'tmp');
 
@@ -107,8 +126,9 @@ test('Build script', function(t) {
         t.strictEqual(readErr, null, 'should create a directory.');
         t.notEqual(filePaths.indexOf('psc'), -1, 'should compile psc binary.');
         t.notEqual(filePaths.indexOf('psc-docs'), -1, 'should compile psc-docs binary.');
-        t.notEqual(filePaths.indexOf('psc-make'), -1, 'should compile psc-make binary.');
         t.notEqual(filePaths.indexOf('psci'), -1, 'should compile psci binary.');
+        t.notEqual(filePaths.indexOf('psc-bundle'), -1, 'should compile psc-bundle binary.');
+        t.notEqual(filePaths.indexOf('psc-publish'), -1, 'should compile psc-publish binary.');
       });
     });
 });
